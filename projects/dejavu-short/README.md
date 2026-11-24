@@ -4,6 +4,17 @@ Status: Skript, Voiceover-Timing, Musik, Shotlist und Render-Pipeline sind ferti
 (Testrender mit Platzhalter-Clips: 58,27 s, 1080×1920, Szenen bildgenau auf den Sätzen).
 Offen: echte Clips von Pixabay kuratieren (braucht `PIXABAY_API_KEY`).
 
+## Neue Cloud-Umgebung einrichten (claude.ai/code)
+
+1. Neue Umgebung anlegen, Netzwerk **Limited** (Paketmanager erlaubt), erlaubte Hosts:
+   `speech.platform.bing.com`, `pixabay.com`, `cdn.pixabay.com`
+2. Umgebungsvariable: `PIXABAY_API_KEY=<dein Key>` (Key unter pixabay.com/api/docs/, eingeloggt).
+   Der Key gehört nur in die Umgebung, nie in das Repo oder den Chat; `config.toml` ist git-ignoriert.
+3. Neue Session mit dieser Umgebung, Repo `saftente/moneyprinterturbo`, Branch
+   `claude/great-wozniak-7mf5zn` starten und schreiben: „Mach mit projects/dejavu-short weiter (README).“
+
+Prüfen, ob der Key ankommt: `test -n "$PIXABAY_API_KEY" && echo ok`.
+
 ## Weitermachen in einer neuen Session
 
 ```bash
