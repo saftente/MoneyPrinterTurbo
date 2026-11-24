@@ -1,8 +1,8 @@
 # Déjà-vu-Short (TikTok / YouTube Shorts, 9:16, Deutsch)
 
-Status: Skript, Voiceover-Timing, Musik, Shotlist und Render-Pipeline sind fertig und getestet
-(Testrender mit Platzhalter-Clips: 58,27 s, 1080×1920, Szenen bildgenau auf den Sätzen).
-Offen: echte Clips von Pixabay kuratieren (braucht `PIXABAY_API_KEY`).
+Status: **fertig gerendert** (58,3 s, 1080×1920, 30 fps, −14 LUFS) mit 23 kuratierten Pixabay-Clips
+(`picks.json`, Quellen in `credits.json`). Das MP4 liegt nach dem Render unter
+`work/dejavu_short.mp4` (git-ignoriert, also nicht im Repo).
 
 ## Neue Cloud-Umgebung einrichten (claude.ai/code)
 
@@ -18,13 +18,24 @@ Prüfen, ob der Key ankommt: `test -n "$PIXABAY_API_KEY" && echo ok`.
 ## Weitermachen in einer neuen Session
 
 ```bash
-cd projects/dejavu-short
-python3 tools/curate.py search    # Kandidaten + Kontaktbögen work/sheet_XX.jpg
-# Kontaktbögen ansehen, picks.json schreiben: {"1": {"index": 0, "offset": 0.5, "focus_x": 0.5}, ...}
-python3 tools/curate.py fetch     # Downloads + credits.json
-python3 tools/curate.py cut       # work/clips/scene_XX.mp4 (1080x1920, Grade, bildgenau)
-./render.sh                       # MoneyPrinterTurbo-Render -> storage/tasks/<id>/final-1.mp4
+python3 projects/dejavu-short/tools/curate.py search    # Kandidaten + Kontaktbögen work/sheet_XX.jpg
+python3 projects/dejavu-short/tools/curate.py fetch     # Downloads laut picks.json + credits.json
+python3 projects/dejavu-short/tools/curate.py cut       # work/clips/scene_XX.mp4 (1080x1920, Grade, bildgenau)
+./projects/dejavu-short/render.sh                       # Render + Mastering -> work/dejavu_short.mp4
 ```
+
+Einzelne Szenen neu suchen oder schneiden: `curate.py search 9 16`, `curate.py cut 21`
+(`search` mit IDs ersetzt nur diese Einträge in `work/candidates.json`, die Indizes in
+`picks.json` beziehen sich auf die jeweils aktuelle Kandidatenliste).
+
+Felder in `picks.json` pro Szene: `index` (Kandidat), `offset` (Startsekunde im Quellclip),
+`focus_x` (0–1, horizontaler Bildausschnitt beim 9:16-Crop), optional `zoom` (langsamer
+Push-in, 0.1 = 10 % enger) und `speed` (Zeitraffer-Faktor).
+
+Hinweise zur Suche: Pixabay verknüpft Suchwörter mit ODER, darum behält `search` nur Treffer,
+deren Tags alle Wörter der Suchanfrage enthalten, verwirft alles unter 720p-Niveau und sortiert
+nach Schärfe beim 9:16-Crop (Hochformat/4K zuerst). Medizin/VR/Neuro-Material ist bei Pixabay
+dünn („mri“: 0 Treffer, „neuron“: 3).
 
 Voraussetzungen: `pip install -r requirements.txt`, `cp config.example.toml config.toml`.
 `tools/sitecustomize.py` (per `PYTHONPATH` in `render.sh`) lässt edge-tts der CA des
@@ -38,7 +49,9 @@ Cloud-Proxys vertrauen; lokal ist das wirkungslos und schadet nicht.
 | `shotlist.json` | 23 Szenen à 1,5–3,4 s mit Zeitstempeln und Pixabay-Suchbegriffen |
 | `assets/voiceover.*` | Referenz-Voiceover + Satz-SRT (MoneyPrinterTurbo erzeugt es beim Render identisch neu) |
 | `assets/bgm_mystery.mp3` | Eigens synthetisierte, lizenzfreie Ambient-Musik (d-Moll-Pad, Herzschlag-Puls, Glocken-Motiv, Riser vor der Pointe), siehe `tools/make_bgm.py` |
-| `render.sh` | MoneyPrinterTurbo-CLI-Aufruf: lokale Clips sequenziell, harte Schnitte, Wort-für-Wort-Untertitel mit Pop-Animation, BeVietnamPro Bold 118 px, Musik −13 dB unter der Stimme |
+| `render.sh` | MoneyPrinterTurbo-CLI-Aufruf: lokale Clips sequenziell, harte Schnitte, Wort-für-Wort-Untertitel mit Pop-Animation, BeVietnamPro Bold 118 px, Musik −13 dB unter der Stimme; danach Zwei-Pass-Loudnorm auf −14 LUFS / −1,5 dBTP (Video unverändert kopiert) |
+| `picks.json` | Gewählter Clip, Offset, Bildausschnitt, Push-in je Szene |
+| `credits.json` | Pixabay-ID, Urheber und Link je Szene (Pixabay-Lizenz, Nennung freiwillig) |
 
 ## Aufbau
 
@@ -49,6 +62,17 @@ Cloud-Proxys vertrauen; lokal ist das wirkungslos und schadet nicht.
 | 14,7–42,8 s | Erklärung | ~2/3 kennen es · Hypothese 1: Ähnlichkeit ohne abrufbare Erinnerung (VR-Experimente) · Hypothese 2: Kontroll-/Konfliktsignal |
 | 42,8–55,6 s | Überraschung | Vorhersagegefühl im Déjà-vu, Trefferquote auf Zufallsniveau |
 | 55,6–58,2 s | Ende | Wann hattest du dein letztes Déjà-vu? |
+
+## Bildauswahl (Retention)
+
+- **Hook:** Makro-Iris mit Push-in, das Auge schließt sich genau am Satzende; Szene 2 taucht durch
+  eine Pupille ins Neuron (kurzer Glitch-Übergang statt Standbild).
+- **Loop:** Das Video endet auf einem Gesicht, das die Augen öffnet und in die Kamera schaut, während
+  die Frage gestellt wird. Das spiegelt das sich schließende Auge am Anfang.
+- **Raum-Hypothese:** zwei unterschiedlich eingerichtete, ähnlich aufgebaute Wohnzimmer hintereinander (Szenen 10/11).
+- **Pointe:** Roulette-Kugel fällt genau bei „reines Zufallsniveau“ ins Fach.
+- Statische Einstellungen haben einen langsamen Push-in, sodass in keiner Szene das Bild steht.
+  Schnitt alle 1,5–3,4 s.
 
 ## Faktencheck
 

@@ -35,12 +35,22 @@ def _key() -> str:
 
 
 def _search(query: str) -> list[dict]:
-    params = {"key": _key(), "q": query, "video_type": "film", "per_page": 30, "safesearch": "true"}
+    params = {"key": _key(), "q": query, "video_type": "film", "per_page": 100, "safesearch": "true"}
     r = requests.get(f"https://pixabay.com/api/videos/?{urlencode(params)}", timeout=30)
     if r.status_code != 200:
         print(f"  ! {query!r}: HTTP {r.status_code} {r.text[:120]}")
         return []
     return r.json().get("hits", [])
+
+
+def _stem(w: str) -> str:
+    return w.lower().strip().rstrip("s")
+
+
+def _relevant(query: str, tags: str) -> bool:
+    # Pixabay ORs the words of a query; keep only hits whose tags contain every word.
+    tokens = {_stem(t) for t in tags.replace(",", " ").split()}
+    return all(_stem(w) in tokens for w in query.split())
 
 
 def _rendition(hit: dict) -> dict:
@@ -54,28 +64,43 @@ def _rendition(hit: dict) -> dict:
     return best | {"name": "best"}
 
 
-def search() -> None:
+def _sharpness(c: dict) -> float:
+    """Source pixels per output pixel after the 9:16 cover crop (>=1 means no upscaling)."""
+    w, h = c["width"] or 1, c["height"] or 1
+    return min(w / 1080, h / 1920) if w / h <= 1080 / 1920 else h / 1920
+
+
+def search(only: list[str] | None = None) -> None:
+    """Search all scenes, or only the given scene ids (merged into candidates.json)."""
     WORK.mkdir(exist_ok=True)
-    out: dict[str, list[dict]] = {}
+    out: dict[str, list[dict]] = json.loads(CANDS.read_text(encoding="utf-8")) if only and CANDS.exists() else {}
     for shot in SHOTS:
+        if only and str(shot["id"]) not in only:
+            continue
         need = shot["end"] - shot["start"] + TAIL_PAD + 0.5
         seen, cands = set(), []
-        for q in shot["queries"]:
-            for h in _search(q):
-                if h["id"] in seen or h.get("duration", 0) < need:
+        for qi, q in enumerate(shot["queries"]):
+            for rank, h in enumerate(_search(q)):
+                if h["id"] in seen or h.get("duration", 0) < need or not _relevant(q, h.get("tags", "")):
                     continue
                 seen.add(h["id"])
                 v = _rendition(h)
-                cands.append({
+                c = {
                     "pixabay_id": h["id"], "query": q, "page": h.get("pageURL"), "user": h.get("user"),
                     "duration": h.get("duration"), "tags": h.get("tags"), "url": v.get("url"),
                     "width": v.get("width"), "height": v.get("height"),
                     "thumb": v.get("thumbnail") or (h.get("videos", {}).get("medium") or {}).get("thumbnail"),
                     "portrait": v.get("height", 0) > v.get("width", 0), "likes": h.get("likes", 0),
-                })
-        cands.sort(key=lambda c: (not c["portrait"], -c["likes"]))
-        out[str(shot["id"])] = cands[:12]
-        print(f"scene {shot['id']:>2}: {len(cands)} candidates")
+                }
+                if _sharpness(c) < 0.55:  # 720p and smaller look mushy at 1080x1920
+                    continue
+                c["sharp"] = round(_sharpness(c), 2)
+                # Earlier queries are the better fit; within one, Pixabay's popularity rank.
+                c["score"] = min(c["sharp"], 1.0) * 2 - qi * 0.25 - rank * 0.02
+                cands.append(c)
+        cands.sort(key=lambda c: -c["score"])
+        out[str(shot["id"])] = cands[:16]
+        print(f"scene {shot['id']:>2}: {len(cands)} relevant candidates")
         _sheet(shot, out[str(shot["id"])])
     CANDS.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
@@ -93,8 +118,8 @@ def _sheet(shot: dict, cands: list[dict]) -> None:
             img.thumbnail((tw, th))
             x, y = (i % cols) * tw, 30 + (i // cols) * th
             sheet.paste(img, (x, y))
-            d.rectangle((x, y, x + 150, y + 14), fill="black")
-            d.text((x + 3, y + 2), f"#{i} {'P' if c['portrait'] else 'L'} {c['duration']}s", fill="yellow", font=font)
+            d.rectangle((x, y, x + 200, y + 14), fill="black")
+            d.text((x + 3, y + 2), f"#{i} {c['width']}x{c['height']} {c['duration']}s {c['query']}", fill="yellow", font=font)
         except Exception as e:  # thumbnail failures should not stop the run
             print(f"  thumb {i} failed: {e}")
     sheet.save(WORK / f"sheet_{shot['id']:02d}.jpg", quality=85)
@@ -121,12 +146,15 @@ def fetch() -> None:
     (ROOT / "credits.json").write_text(json.dumps(credits, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
-def cut() -> None:
+def cut(only: list[str] | None = None) -> None:
+    """Cut all scenes, or only the given scene ids."""
     picks = json.loads(PICKS.read_text(encoding="utf-8"))
     out = WORK / "clips"
     out.mkdir(parents=True, exist_ok=True)
     for shot in SHOTS:
         sid = str(shot["id"])
+        if only and sid not in only:
+            continue
         p = picks[sid]
         # Frame-accurate lengths so the scene cuts never drift against the voiceover.
         dur = (round(shot["end"] * FPS) - round(shot["start"] * FPS)) / FPS
@@ -134,13 +162,22 @@ def cut() -> None:
         # Crop to 9:16 around a horizontal focus point (0..1), then a cool, slightly
         # desaturated grade with a soft vignette for one consistent mysterious look.
         fx = p.get("focus_x", 0.5)
+        # Optional slow push-in for static shots: zoom 0.1 ends 10 % tighter. zoompan runs
+        # on a 2x upscale so the sub-pixel steps stay smooth instead of jittering.
+        zoom = p.get("zoom", 0)
+        frames = round(dur * FPS)
+        push = (
+            f"scale=2160:3840:flags=bicubic,zoompan=z='1+{zoom}*on/{frames}':"
+            f"x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=1080x1920:fps={FPS},"
+            if zoom else ""
+        )
         vf = (
             f"setpts=PTS/{speed},"
             "scale=1080:1920:force_original_aspect_ratio=increase,"
-            f"crop=1080:1920:(in_w-1080)*{fx}:(in_h-1920)/2,"
+            f"crop=1080:1920:(in_w-1080)*{fx}:(in_h-1920)/2,fps={FPS},{push}"
             "eq=saturation=0.82:contrast=1.06:brightness=-0.02,"
-            "colorbalance=bs=0.05:ms=0.02:hs=-0.02,"
-            "vignette=PI/5,fps=30,format=yuv420p"
+            "colorbalance=bs=0.05:bm=0.02:bh=-0.02,"
+            "vignette=PI/5,format=yuv420p"
         )
         cmd = [
             "ffmpeg", "-y", "-v", "error", "-ss", str(p.get("offset", 0.5)),
@@ -153,4 +190,9 @@ def cut() -> None:
 
 
 if __name__ == "__main__":
-    {"search": search, "fetch": fetch, "cut": cut}[sys.argv[1]]()
+    if sys.argv[1] == "search":
+        search(sys.argv[2:] or None)
+    elif sys.argv[1] == "cut":
+        cut(sys.argv[2:] or None)
+    else:
+        fetch()

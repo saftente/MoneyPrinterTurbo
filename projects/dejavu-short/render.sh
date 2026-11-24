@@ -29,3 +29,14 @@ PYTHONPATH="$P/tools${PYTHONPATH:+:$PYTHONPATH}" python3 cli.py \
   --subtitle-position custom --custom-position 62 \
   --task-id "$TASK_ID" \
   --stop-at video
+
+# Master the mix to the -14 LUFS short-form platforms play at (TikTok, Shorts, Reels);
+# two-pass loudnorm keeps the voice/music balance and copies the video untouched.
+OUT="$ROOT/storage/tasks/$TASK_ID"
+STATS=$(ffmpeg -hide_banner -nostats -i "$OUT/final-1.mp4" \
+  -af loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json -f null - 2>&1 | sed -n '/^{/,/^}/p')
+val() { echo "$STATS" | python3 -c "import json,sys; print(json.load(sys.stdin)['$1'])"; }
+ffmpeg -y -v error -i "$OUT/final-1.mp4" -c:v copy -c:a aac -b:a 192k -ar 48000 -af \
+  "loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=$(val input_i):measured_TP=$(val input_tp):measured_LRA=$(val input_lra):measured_thresh=$(val input_thresh):offset=$(val target_offset):linear=true" \
+  -movflags +faststart "$P/work/dejavu_short.mp4"
+echo "final: $P/work/dejavu_short.mp4"
