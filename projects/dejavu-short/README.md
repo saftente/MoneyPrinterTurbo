@@ -1,8 +1,36 @@
 # Déjà-vu-Short (TikTok / YouTube Shorts, 9:16, Deutsch)
 
-Status: **fertig gerendert** (58,3 s, 1080×1920, 30 fps, −14 LUFS) mit 23 kuratierten Pixabay-Clips
-(`picks.json`, Quellen in `credits.json`). Das MP4 liegt nach dem Render unter
-`work/dejavu_short.mp4` (git-ignoriert, also nicht im Repo).
+Status: **fertig gerendert** mit Gemini-Stimme „Algenib“ (63,1 s, 1080×1920, 30 fps, −14 LUFS) und
+23 kuratierten Pixabay-Clips (`picks.json`, Quellen in `credits.json`). Das MP4 liegt nach dem
+Render unter `work/dejavu_short.mp4` (git-ignoriert, also nicht im Repo).
+
+Die aktuelle Vertonung stammt von `gemini-3.8-flash-lite-tts`, weil das Free-Tier-Tageslimit
+(10 Anfragen pro Modell) für `gemini-3.8-flash-tts` aufgebraucht war. Mit dem Vollmodell neu vertonen:
+siehe „Neue Stimme“ unten (Standardmodell in `gemini_voice.py`).
+
+## Neue Stimme (Gemini TTS)
+
+Edge-TTS ist keine Option mehr: Alle deutschen Edge-Männerstimmen liefern dieselbe Aufnahme,
+die Frauenstimmen ebenso. Gemini braucht einen Key als Network Secret der Umgebung:
+Typ Bearer, Host `generativelanguage.googleapis.com`, Header `x-goog-api-key`, Präfix leer.
+Whisper (für die Wort-Untertitel) braucht die Hosts `huggingface.co` und `us.aws.cdn.hf.co`.
+
+```bash
+python3 projects/dejavu-short/tools/gemini_voice.py --voice Algenib          # work/voice/Algenib.wav
+ffmpeg -y -i projects/dejavu-short/work/voice/Algenib.wav -af apad=pad_dur=1.3 projects/dejavu-short/work/voice/Algenib_padded.wav
+python3 projects/dejavu-short/tools/align.py projects/dejavu-short/work/voice/Algenib_padded.wav   # SRT + Schnitte in shotlist.json
+# letzte Szene in shotlist.json ~0,2 s über das Audioende ziehen, sonst füllt MoneyPrinterTurbo mit Clip-Loops auf
+python3 projects/dejavu-short/tools/make_bgm.py projects/dejavu-short/work/bgm.wav && ffmpeg -y -i projects/dejavu-short/work/bgm.wav -b:a 192k projects/dejavu-short/assets/bgm_mystery.mp3
+python3 projects/dejavu-short/tools/curate.py cut
+VOICE_FILE=projects/dejavu-short/work/voice/Algenib_padded.wav ./projects/dejavu-short/render.sh
+```
+
+Stilsteuerung: Gemini liest eine normale Anweisung im Prompt mit vor, und Systemanweisungen lehnen
+die TTS-Modelle ab. Deshalb nutzt `gemini_voice.py` das Format mit Regieanweisungen über einem
+`#### TRANSCRIPT`-Abschnitt; nur der Transkriptteil wird gesprochen. Eine Längenprüfung bricht ab,
+falls doch Anweisungen gesprochen wurden. `align.py` liegt am alten Edge-Voiceover gemessen im Mittel
+0,05 s neben den echten Wortgrenzen. Die Musik (`make_bgm.py`) liest Länge und Riser-Zeitpunkte
+aus der Shotlist (Riser enden auf Szene 18 und 23).
 
 ## Neue Cloud-Umgebung einrichten (claude.ai/code)
 
@@ -45,11 +73,11 @@ Cloud-Proxys vertrauen; lokal ist das wirkungslos und schadet nicht.
 
 | Datei | Inhalt |
 |---|---|
-| `script.txt` | Sprechertext (140 Wörter, ~58 s bei Stimme Florian, Rate 1.14) |
-| `shotlist.json` | 23 Szenen à 1,5–3,4 s mit Zeitstempeln und Pixabay-Suchbegriffen |
-| `assets/voiceover.*` | Referenz-Voiceover + Satz-SRT (MoneyPrinterTurbo erzeugt es beim Render identisch neu) |
+| `script.txt` | Sprechertext (140 Wörter, ~62 s mit Gemini Algenib) |
+| `shotlist.json` | 23 Szenen mit Zeitstempeln (aus `align.py`) und Pixabay-Suchbegriffen |
+| `assets/voiceover.*` | Altes Edge-Referenz-Voiceover + Satz-SRT (Prüfstein für `align.py`) |
 | `assets/bgm_mystery.mp3` | Eigens synthetisierte, lizenzfreie Ambient-Musik (d-Moll-Pad, Herzschlag-Puls, Glocken-Motiv, Riser vor der Pointe), siehe `tools/make_bgm.py` |
-| `render.sh` | MoneyPrinterTurbo-CLI-Aufruf: lokale Clips sequenziell, harte Schnitte, Wort-für-Wort-Untertitel mit Pop-Animation, BeVietnamPro Bold 118 px, Musik −13 dB unter der Stimme; danach Zwei-Pass-Loudnorm auf −14 LUFS / −1,5 dBTP (Video unverändert kopiert) |
+| `render.sh` | MoneyPrinterTurbo-CLI-Aufruf: lokale Clips sequenziell, harte Schnitte, Wort-für-Wort-Untertitel mit Pop-Animation, BeVietnamPro Bold 118 px, Musik −13 dB unter der Stimme, Clips bis 8 s (Szenen sind 1,6–5,1 s); `VOICE_FILE` nimmt ein fertiges Voiceover samt `align.py`-Untertiteln; danach Zwei-Pass-Loudnorm auf −14 LUFS / −1,5 dBTP (Video unverändert kopiert) |
 | `picks.json` | Gewählter Clip, Offset, Bildausschnitt, Push-in je Szene |
 | `credits.json` | Pixabay-ID, Urheber und Link je Szene (Pixabay-Lizenz, Nennung freiwillig) |
 
@@ -57,11 +85,11 @@ Cloud-Proxys vertrauen; lokal ist das wirkungslos und schadet nicht.
 
 | Zeit | Teil | Text |
 |---|---|---|
-| 0–3,2 s | Hook | Dein Gehirn lügt dich manchmal an – und du spürst es. |
-| 3,2–14,7 s | Phänomen | Raum, Satz, „genau das hast du schon mal erlebt“, dann weg |
-| 14,7–42,8 s | Erklärung | ~2/3 kennen es · Hypothese 1: Ähnlichkeit ohne abrufbare Erinnerung (VR-Experimente) · Hypothese 2: Kontroll-/Konfliktsignal |
-| 42,8–55,6 s | Überraschung | Vorhersagegefühl im Déjà-vu, Trefferquote auf Zufallsniveau |
-| 55,6–58,2 s | Ende | Wann hattest du dein letztes Déjà-vu? |
+| 0–4,3 s | Hook | Dein Gehirn lügt dich manchmal an – und du spürst es. |
+| 4,3–16,9 s | Phänomen | Raum, Satz, „genau das hast du schon mal erlebt“, dann weg |
+| 16,9–46,4 s | Erklärung | ~2/3 kennen es · Hypothese 1: Ähnlichkeit ohne abrufbare Erinnerung (VR-Experimente) · Hypothese 2: Kontroll-/Konfliktsignal |
+| 46,4–59,7 s | Überraschung | Vorhersagegefühl im Déjà-vu, Trefferquote auf Zufallsniveau |
+| 59,7–63,1 s | Ende | Wann hattest du dein letztes Déjà-vu? |
 
 ## Bildauswahl (Retention)
 

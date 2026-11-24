@@ -31,7 +31,7 @@ PYTHONPATH="$P/tools${PYTHONPATH:+:$PYTHONPATH}" python3 "$P/tools/run_cli.py" \
   --video-source local --video-materials "$CLIPS" \
   --video-aspect 9:16 --video-fit-mode cover \
   --video-concat-mode sequential --video-transition-mode none \
-  --video-clip-duration 4 \
+  --video-clip-duration 8 \
   "${VOICE_ARGS[@]}" \
   --bgm-type custom --bgm-file storage/bgm/dejavu_bgm_mystery.mp3 --bgm-volume 0.22 \
   --subtitle-enabled --subtitle-display-mode word_by_word --subtitle-animation pop_spring \

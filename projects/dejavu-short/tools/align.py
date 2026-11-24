@@ -109,7 +109,10 @@ def main(audio: str) -> None:
         prev_end = times[pos - 1][1] if pos else 0.0
         starts.append(0.0 if pos == 0 else round(max(prev_end, s - 0.12, (prev_end + s) / 2), 2))
         pos += len(words(shot["line"]))
-    total = times[-1][1] + 1.2  # let the question hang for a moment
+    # The last scene runs to the end of the audio (pad the voiceover so the question can hang).
+    import subprocess
+    total = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                  audio], capture_output=True, text=True).stdout)
     for k, shot in enumerate(shots):
         shot["start"] = starts[k]
         shot["end"] = round(starts[k + 1] if k + 1 < len(shots) else total, 2)

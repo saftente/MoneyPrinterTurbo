@@ -20,16 +20,22 @@ from google.genai import types
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "work" / "voice"
-DEFAULT_MODEL = "gemini-3.8-flash-lite-tts"
+DEFAULT_MODEL = "gemini-3.8-flash-tts"
 TARGET_LUFS = -19.7  # assets/voiceover.mp3 (Edge) measured with ebur128
 
-STYLE = (
-    "Lies den folgenden deutschen Text als Erzähler eines spannenden Wissens-Kurzvideos vor. "
-    "Klinge wie ein echter Mensch, der etwas Unheimliches und Faszinierendes erzählt: ruhig, "
-    "nah am Mikrofon, leicht geheimnisvoll, mit natürlicher Betonung und kurzen Spannungspausen "
-    "vor den Pointen. Nicht werblich, nicht übertrieben, kein Nachrichtensprecher. Zügiges, "
-    "aber nicht gehetztes Tempo. Sprich ausschließlich den Text, ohne etwas hinzuzufügen:\n\n"
-)
+# Gemini TTS speaks only the TRANSCRIPT section; the notes above it steer the delivery.
+# (A plain instruction in the prompt gets read aloud, and the TTS models refuse system instructions.)
+DIRECTION = """# AUDIO PROFILE: Erzähler eines deutschen Wissens-Kurzvideos
+## THE SCENE: Ein ruhiger Raum, die Stimme ganz nah am Mikrofon. Er erzählt einer einzelnen Person
+von etwas Unheimlichem, das er selbst faszinierend findet.
+### DIRECTOR'S NOTES
+Style: Ein echter Mensch, kein Nachrichtensprecher und keine Werbung. Leicht geheimnisvoll,
+neugierig, mit natürlicher Betonung und Satzmelodie.
+Pacing: Zügig, aber nicht gehetzt. Kurze Spannungspausen vor den Pointen
+("Dann ist es weg.", "reines Zufallsniveau", "Das Wissen nicht.").
+Accent: Hochdeutsch.
+#### TRANSCRIPT
+"""
 
 
 def client() -> genai.Client:
@@ -41,7 +47,7 @@ def synthesize(text: str, voice: str, model: str, dst: Path) -> None:
     with client() as c:
         r = c.models.generate_content(
             model=model,
-            contents=STYLE + text,
+            contents=DIRECTION + text,
             config=types.GenerateContentConfig(
                 response_modalities=["AUDIO"],
                 speech_config=types.SpeechConfig(
@@ -92,6 +98,10 @@ def main() -> None:
     synthesize(text, a.voice, a.model, dst)
     dur = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
                           str(dst)], capture_output=True, text=True).stdout.strip()
+    # ~2.4 words/s is natural German narration; far longer means Gemini read the notes aloud.
+    if float(dur) > len(text.split()) / 2.4 * 1.5:
+        raise SystemExit(f"{dst}: {float(dur):.1f} s is too long for {len(text.split())} words, "
+                         "the direction was probably spoken; check the prompt format")
     print(f"{dst} ({float(dur):.2f} s)")
 
 

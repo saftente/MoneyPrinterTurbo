@@ -1,6 +1,9 @@
 """Original ambient underscore: D minor pad, sub pulse, sparse bell motif, gentle riser."""
-import numpy as np, scipy.signal as sg, soundfile as sf, sys
-sr=44100; dur=62.0; n=int(sr*dur); t=np.arange(n)/sr
+import json, numpy as np, scipy.signal as sg, soundfile as sf, sys
+from pathlib import Path
+# Length and riser timing follow shotlist.json, so the music fits whatever voiceover it was cut to.
+SHOTS={s["id"]:s for s in json.loads((Path(__file__).resolve().parents[1]/"shotlist.json").read_text(encoding="utf-8"))}
+sr=44100; dur=round(SHOTS[max(SHOTS)]["end"]+1.5,2); n=int(sr*dur); t=np.arange(n)/sr
 rng=np.random.default_rng(7)
 def midi(m): return 440*2**((m-69)/12)
 def env(length, a, r):
@@ -50,8 +53,9 @@ for j,tm in enumerate(times):
 # airy noise bed
 noise=rng.standard_normal((n,2)); b,a=sg.butter(2,[2500/(sr/2),7000/(sr/2)],btype='band')
 out+=sg.lfilter(b,a,noise,axis=0)*0.004
-# riser into the twist (~41-43 s) and final question
-for c0,c1 in ((39.5,42.6),(53.5,55.6)):
+# risers ending on the twist ("Jetzt wird es seltsam", scene 18) and on the final question (scene 23)
+for c1,L_ in ((SHOTS[18]["start"],3.1),(SHOTS[23]["start"],2.1)):
+    c0=c1-L_
     s=int(c0*sr); L=int((c1-c0)*sr); tt=np.arange(L)/sr
     nz=rng.standard_normal(L); b,a=sg.butter(2,[800/(sr/2),5000/(sr/2)],btype='band')
     w=sg.lfilter(b,a,nz)*(tt/tt[-1])**2*0.05
