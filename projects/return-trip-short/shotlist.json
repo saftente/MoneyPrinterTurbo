@@ -1,0 +1,20 @@
+[
+  {"id": 1, "start": 0.0, "end": 2.8, "line": "Du fährst exakt dieselbe Strecke zurück.", "queries": ["driving", "highway driving", "car road", "road trip"]},
+  {"id": 2, "start": 2.8, "end": 5.86, "line": "Warum fühlt sie sich plötzlich viel kürzer an?", "queries": ["speedometer", "dashboard", "steering wheel", "car interior"]},
+  {"id": 3, "start": 5.86, "end": 8.32, "line": "Die Fahrt in den Urlaub: endlos.", "queries": ["traffic jam", "traffic", "congestion", "rush hour"]},
+  {"id": 4, "start": 8.32, "end": 11.24, "line": "Und zurück? Gleiche Strecke, gleiche Zeit,", "queries": ["highway aerial", "road aerial", "drone road", "aerial car"]},
+  {"id": 5, "start": 11.24, "end": 13.16, "line": "und zack, du bist da.", "queries": ["hyperlapse", "time lapse road", "timelapse driving", "fast car"]},
+  {"id": 6, "start": 13.16, "end": 15.98, "line": "Das nennt sich Return Trip Effect.", "queries": ["road trip", "camper", "van road", "convertible"]},
+  {"id": 7, "start": 15.98, "end": 18.06, "line": "In Experimenten wirkte der Rückweg", "queries": ["cycling", "bicycle", "bike ride", "cyclist"]},
+  {"id": 8, "start": 18.06, "end": 20.94, "line": "um bis zu 22 Prozent kürzer.", "queries": ["bus", "bus window", "bus interior", "coach"]},
+  {"id": 9, "start": 20.94, "end": 22.92, "line": "Forscher erklären das mit Erwartungen:", "queries": ["woman car window", "car passenger", "looking out window", "thinking car"]},
+  {"id": 10, "start": 22.92, "end": 25.34, "line": "Der Hinweg dauert länger als gedacht.", "queries": ["watch", "wristwatch", "checking time", "bored"]},
+  {"id": 11, "start": 25.34, "end": 27.86, "line": "Also stellen wir uns beim Rückweg auf eine lange Fahrt ein,", "queries": ["empty road", "long road", "straight road", "desert road"]},
+  {"id": 12, "start": 27.86, "end": 31.12, "line": "und plötzlich ist er kürzer als befürchtet.", "queries": ["night driving", "city lights car", "tunnel", "light trails"]},
+  {"id": 13, "start": 31.12, "end": 33.6, "line": "Und jetzt kommt's: In einer Studie", "queries": ["stopwatch", "clock", "hourglass", "timer"]},
+  {"id": 14, "start": 33.6, "end": 36.1, "line": "wirkte der Rückweg unterwegs gar nicht kürzer.", "queries": ["walking path", "walking", "hiking", "walking forest"]},
+  {"id": 15, "start": 36.1, "end": 37.74, "line": "Erst im Rückblick.", "queries": ["rear view mirror", "rearview mirror", "car mirror", "mirror car"]},
+  {"id": 16, "start": 37.74, "end": 40.74, "line": "Die Abkürzung entsteht also wohl erst in deiner Erinnerung.", "queries": ["travel photos", "photo album", "polaroid", "memories"]},
+  {"id": 17, "start": 40.74, "end": 41.94, "line": "Ist das bei dir auch so,", "queries": ["friends car", "passenger smiling", "woman car", "road trip friends"]},
+  {"id": 18, "start": 41.94, "end": 46.37, "line": "oder zieht sich bei dir ausgerechnet der Rückweg?", "queries": ["sunset road", "road sunset", "sunset driving", "evening road"]}
+]

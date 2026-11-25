@@ -1,0 +1,20 @@
+{
+ "1": {"index": 5, "offset": 1.0, "focus_x": 0.43},
+ "2": {"index": 15, "offset": 0.0, "focus_x": 0.62, "zoom": 0.06},
+ "3": {"index": 4, "offset": 2.0, "focus_x": 0.45},
+ "4": {"index": 6, "offset": 1.0, "focus_x": 0.5},
+ "5": {"index": 15, "offset": 1.0, "focus_x": 0.5},
+ "6": {"index": 12, "offset": 0.0, "focus_x": 0.25},
+ "7": {"index": 4, "offset": 1.0, "focus_x": 0.5},
+ "8": {"index": 0, "offset": 2.0, "focus_x": 0.5, "zoom": 0.05},
+ "9": {"index": 6, "offset": 1.0, "focus_x": 0.91},
+ "10": {"index": 3, "offset": 1.0, "focus_x": 0.43, "zoom": 0.06},
+ "11": {"index": 7, "offset": 1.0, "focus_x": 0.43, "zoom": 0.08},
+ "12": {"index": 4, "offset": 13.0, "focus_x": 0.5},
+ "13": {"index": 6, "offset": 2.0, "focus_x": 0.18, "zoom": 0.05},
+ "14": {"index": 2, "offset": 0.0, "focus_x": 0.5},
+ "15": {"index": 0, "offset": 1.0, "focus_x": 0.21},
+ "16": {"index": 2, "offset": 0.5, "focus_x": 0.06, "zoom": 0.08},
+ "17": {"index": 4, "offset": 1.0, "focus_x": 0.72},
+ "18": {"index": 2, "offset": 0.5, "focus_x": 0.57}
+}
