@@ -1,0 +1,16 @@
+{
+ "1": {"index": 5, "offset": 0.0, "focus_x": 0.6},
+ "2": {"index": 14, "offset": 1.0, "focus_x": 0.58, "zoom": 0.06},
+ "3": {"index": 1, "offset": 1.0, "focus_x": 0.5},
+ "4": {"index": 12, "offset": 2.0, "focus_x": 0.85},
+ "5": {"from": 1, "index": 9, "offset": 0.5, "focus_x": 0.4},
+ "6": {"index": 5, "offset": 1.0, "focus_x": 0.25, "zoom": 0.05},
+ "7": {"index": 15, "offset": 7.0, "focus_x": 0.5},
+ "8": {"index": 12, "offset": 3.0, "focus_x": 0.3},
+ "9": {"index": 3, "offset": 6.0, "focus_x": 0.55},
+ "10": {"index": 0, "focus_x": 0.5, "zoom": 0.1, "still": {"file": "work/stills/scene_10.jpg", "pixabay_id": 8037733, "user": "Sunriseforever", "page": "https://pixabay.com/photos/woman-model-posing-photo-studio-8037733/"}, "pre_crop": "iw:ih*0.72:0:0"},
+ "11": {"index": 5, "offset": 1.0, "focus_x": 0.42, "zoom": 0.05},
+ "12": {"from": 14, "index": 3, "offset": 20.0, "focus_x": 0.45},
+ "13": {"index": 1, "offset": 9.0, "focus_x": 0.62, "zoom": 0.05},
+ "14": {"from": 1, "index": 5, "offset": 13.0, "focus_x": 0.62}
+}
