@@ -1,0 +1,20 @@
+[
+  {"id": 1, "start": 0.0, "end": 2.02, "line": "Dein Handy verrät Google Maps,", "visual": "anim:hook", "queries": []},
+  {"id": 2, "start": 2.02, "end": 3.28, "line": "wo gerade Stau ist.", "visual": "stock:traffic jam aerial", "queries": ["traffic jam aerial", "traffic jam", "highway traffic aerial", "congestion"]},
+  {"id": 3, "start": 3.28, "end": 5.54, "line": "Zumindest, wenn die Standorterfassung an ist.", "visual": "anim:toggle", "queries": []},
+  {"id": 4, "start": 5.54, "end": 9.0, "line": "Dann schickt es immer wieder anonyme Positionsdaten an Google.", "visual": "anim:pings", "queries": []},
+  {"id": 5, "start": 9.0, "end": 12.08, "line": "Aus zwei Positionen und der Zeit dazwischen ergibt sich,", "visual": "anim:speed1", "queries": []},
+  {"id": 6, "start": 12.08, "end": 13.64, "line": "wie schnell du fährst.", "visual": "anim:speed2", "queries": []},
+  {"id": 7, "start": 13.64, "end": 16.79, "line": "Google kombiniert die Daten vieler Handys auf derselben Straße,", "visual": "anim:aggregate", "queries": []},
+  {"id": 8, "start": 16.79, "end": 18.98, "line": "ohne einzelne Geräte zu erkennen.", "visual": "anim:anon", "queries": []},
+  {"id": 9, "start": 18.98, "end": 21.36, "line": "Fahren plötzlich alle viel langsamer als sonst,", "visual": "anim:slowdown", "queries": []},
+  {"id": 10, "start": 21.36, "end": 23.66, "line": "wird die Straße orange, dann rot.", "visual": "anim:color", "queries": []},
+  {"id": 11, "start": 23.66, "end": 26.42, "line": "Für die Vorhersage nutzt Google maschinelles Lernen:", "visual": "anim:ml", "queries": []},
+  {"id": 12, "start": 26.42, "end": 29.71, "line": "Es verbindet den Verkehr von jetzt mit historischen Mustern,", "visual": "anim:history", "queries": []},
+  {"id": 13, "start": 29.71, "end": 32.98, "line": "also wie voll diese Straße sonst um diese Uhrzeit ist.", "visual": "anim:clock", "queries": []},
+  {"id": 14, "start": 32.98, "end": 37.22, "line": "So schätzt Google Maps den Verkehr in zehn, zwanzig oder fünfzig Minuten", "visual": "anim:forecast", "queries": []},
+  {"id": 15, "start": 37.22, "end": 39.76, "line": "und schlägt eine schnellere Route vor.", "visual": "anim:reroute", "queries": []},
+  {"id": 16, "start": 39.76, "end": 44.4, "line": "Wie sehr das an Handys hängt, zeigte 2020 der Künstler Simon Weckert:", "visual": "anim:weckert_intro", "queries": []},
+  {"id": 17, "start": 44.4, "end": 49.52, "line": "Er zog 99 Smartphones mit laufender Navigation in einem Bollerwagen durch Berlin.", "visual": "anim:cart", "queries": []},
+  {"id": 18, "start": 49.52, "end": 53.46, "line": "Auf der Karte: Stau auf fast leeren Straßen.", "visual": "anim:fakejam", "queries": []}
+]
