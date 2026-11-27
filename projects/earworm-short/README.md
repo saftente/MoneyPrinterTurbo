@@ -37,8 +37,8 @@ Tiere). Es liegt unter `work/stills/` (nicht im Repo) und wird mit `picks.json` 
 
 MoviePy rundet Cliplängen auf 0,01 s (37 Frames = 1,2333 s → 1,23 s), und MoneyPrinterTurbo schneidet jeden
 Clip auf diese Länge zu. Dabei ging etwa jeder zweite Clip um einen Frame verloren; die letzten Schnitte
-kamen bis zu 8 Frames (0,27 s) zu früh. Das betraf auch die bisherigen Videos, dort mit kleinerem Effekt
-(längere Szenen). `render.sh` hängt die Szenenclips jetzt vorab bildgenau zu einer Datei aneinander (Prüfung
+kamen bis zu 8 Frames (0,27 s) zu früh. Die bisherigen Videos liefen durch denselben Code und sind vermutlich
+auch betroffen (nicht nachgemessen). `render.sh` hängt die Szenenclips jetzt vorab bildgenau zu einer Datei aneinander (Prüfung
 der Frameanzahl) und übergibt nur diese; MoneyPrinterTurbo zerlegt sie in 8-s-Stücke ohne Rundungsverlust.
 Gemessen: alle 13 Schnitte auf den Frame genau.
 
